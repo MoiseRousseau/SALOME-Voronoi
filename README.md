@@ -2,6 +2,7 @@
 
 Interface between Salome and Vorpalite from the [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html) programming library for polyhedral mesh generation. Note the Vorpalite program has many features (such as parallel tetrahedral meshing among other), but this script is primary intented for Centroidal Voronoi diagram computation.
 
+![](https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/sample.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
 
 ## Getting started
 
@@ -61,6 +62,7 @@ salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
 To be completed
 
 * Voronoi diagram made from NETGEN 3D-2D-1D algorithm was found to be quite centroidal.
+* Current performance: 20000 polyhedrons per minutes
 
 ## Authors
 
