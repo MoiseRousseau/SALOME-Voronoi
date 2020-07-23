@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# Author : Moise Rousseau (2020), email at moise.rousseau@polymtl.ca
+
+import SMESH
+import subprocess
+import numpy as np
+
+def exportPoints(meshToExport, output):
+  #open outputfile
+  out = open(output, 'w')
+  #export source points
+  n_nodes = meshToExport.NbNodes()
+  for x in range(1,1+n_nodes):
+    X,Y,Z = meshToExport.GetNodeXYZ(x)
+    out.write('v %s %s %s\n' %(X, Y, Z))
+  out.close()
+  return
+  
+
+def exportBoundary(meshToExport, output):
+  #open outputfile
+  out = open(output, 'w')
+  #export nodes
+  n_nodes = meshToExport.NbNodes()
+  for x in range(1,1+n_nodes):
+    X,Y,Z = meshToExport.GetNodeXYZ(x)
+    out.write('v %s %s %s\n' %(X, Y, Z))
+  #export facets
+  Ids = meshToExport.GetElementsByType(SMESH.FACE)
+  for Id in Ids:
+    nodes = meshToExport.GetElemNodes(Id)
+    out.write('f'+''.join([' '+str(x) for x in nodes]) + '\n')
+  out.close()
+  return
+  
+
+def vorpalite(input_boundary, output_mesh = None, input_points = None, params = None):
+  #prepare command to call
+  cmd = ["vorpalite"]
+  #params
+  if params:
+    if isinstance(params, str): params = params.split()
+    cmd += params
+  else:
+    cmd += ["profile=poly","generate_ids=true","simplify=tets_voronoi_boundary"]
+  #add input point or check for nb_pts
+  if input_points:
+    cmd += ["points_file="+input_points]
+  else:
+    #check if nb_pts defined
+    pass
+  #add mesh to convert
+  cmd += [input_boundary]
+  #output
+  if output_mesh:
+    cmd += [output_mesh]
+  #call command
+  subprocess.call(cmd)
+  return
+
+
+
+def importVorpaliteMesh(mesh, Vmesh):
+  #OVM file format particularity
+  # edge are oriented: i.e. (i,j) = from i to j
+  # in faces: even edge are the normally oriented edge
+  #           but odd mean reversed edge!
+  #           for example, face (2,4,8,7) = edge1, edge2, edge4 but edge3 in reverse!
+  # for poly ??
+  
+  #check mesh format
+  if mesh.split('.')[-1] != 'ovm':
+    print("Only meshes in OVM format are supported")
+  src = open(mesh, 'r')
+  line = src.readline() #pass header
+  
+  line = src.readline() #Vertices
+  nb_vertices = int(src.readline())
+  for i in range(nb_vertices):
+    X,Y,Z = [float(x) for x in src.readline().split()]
+    Vmesh.AddNode(X,Y,Z)
+    
+  #delete double point
+  double = Vmesh.FindCoincidentNodes(1e-6) #in salome, so start from 1!
+  Vmesh.MergeNodes(double)
+  if 0:
+    uniqueIds = {}
+    for Ids in double:
+      for Id in Ids:
+        uniqueIds[Id] = Ids[0]
+  uniqueIds = {x:ids[0] for ids in double for x in ids}
+  if len(uniqueIds) != Vmesh.NbNodes():
+    #it lacks some element
+    for i in range(1,nb_vertices+1):
+      if i not in uniqueIds.keys(): uniqueIds[i] = i
+  
+  line = src.readline() #Edges
+  nb_edges = int(src.readline())
+  #edges = np.array((2*nb_edges,2), dtype='i8')
+  edges = [[0,0]]*2*nb_edges #make the structure according to salome numbering
+  valid_edges = [True]*2*nb_edges
+  for i in range(nb_edges):
+    I,J = [uniqueIds[int(x)+1] for x in src.readline().split()]
+    edges[2*i] = [I,J]
+    edges[2*i+1] = [J,I]
+    if I == J:
+      valid_edges[2*i] = False
+      valid_edges[2*i+1] = False
+    
+  line = src.readline() #Faces
+  nb_faces = int(src.readline())
+  faces = [[]] * 2 * nb_faces
+  valid_faces = [True] * 2 * nb_faces
+  for i in range(nb_faces):
+    #do something with the edges
+    face_elem = [int(x) for x in src.readline().split()[1:]]
+    face_nodes = [edges[x][0] for x in face_elem if valid_edges[x]]
+    faces[2*i] = face_nodes
+    face_nodes.reverse()
+    faces[2*i+1] = face_nodes
+    if len(face_nodes) < 3:
+      valid_faces[2*i] = False
+      valid_faces[2*i+1] = False
+  
+  line = src.readline() #Poly
+  nb_poly = int(src.readline())
+  for i in range(nb_poly):
+    line = src.readline().split()
+    poly_face = [int(x) for x in line[1:]]
+    poly_nodes = []
+    quantities = []
+    for faceid in poly_face:
+      if valid_faces[faceid]:
+        for x in faces[faceid]:
+          poly_nodes.append(x)
+        quantities.append(len(faces[faceid]))
+    Vmesh.AddPolyhedralVolume(poly_nodes, quantities)
+  return
+
+
