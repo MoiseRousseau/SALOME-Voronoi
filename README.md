@@ -11,11 +11,10 @@ Below instructions were tested using Ubuntu 20.04 and Salome 9.4. However, it sh
 
 1. Download the Geogram library source [here](https://gforge.inria.fr/frs/?group_id=5833) and unzip the archive.
 
-2. Install Boost, CGAL and others library header required: `sudo apt install libboost-dev libcgal-dev libglu1-mesa-dev libxxf86vm-dev libxtst-dev`. You may have to install other if error during compiling occur below.
+2. Install Boost, CGAL and others library header required: `sudo apt install libboost-dev libcgal-dev libglu1-mesa-dev libxxf86vm-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev doxygen`. You may have to install other if error during compiling occur below.
 
 3. Open a terminal in the unzipped Geogram folder and run in the terminal:
-```
-./configure.sh
+``` ./configure.sh
 cd build/Linux64-gcc-dynamic-Release
 make -j4
 ```
@@ -29,9 +28,7 @@ The Vorpalite program is now compiled and can be find in `$GEOGRAM/build/Linux64
 1. Clone this repository inside your Salome plugin directory (Typically, `~/.config/salome/Plugins/`)
 
 2. Add the following line to the `smesh_plugin.py` file:
-
-```
-import sys
+``` import sys
 path = "~/.config/salome/Plugins/" #or change by your Salome plugin directory 
 sys.path.append(path + 'SALOME-Voronoi')
 salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
@@ -43,7 +40,7 @@ salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
 
 ## Use the plugin
 
-0. Plugins GUI is launch with `Mesh/Plugins/Voronoi/Convert to Voronoi`.
+0. Launch plugin GUI with `Mesh/Plugins/Voronoi/Convert to Voronoi`.
 
 1. (Mandatory) Select the boundary mesh. This mesh will define the boundary of the Voronoi diagram. Only the 2D elements will be used.
 
