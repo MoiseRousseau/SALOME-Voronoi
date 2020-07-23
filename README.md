@@ -62,7 +62,8 @@ To be completed
 
 ## Know issues
 
-No known issues for instance! :)
+* Slow performance with the function `orient_face()`, where the plugin passes 60% of the total runtime in some cases. Maybe try to Cythonise this part ?
+* No other known issues for instance! :)
 
 ## Getting involved
 

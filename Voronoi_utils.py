@@ -20,6 +20,7 @@
 import SMESH
 import subprocess
 import numpy as np
+#import time
 
 def exportPoints(meshToExport, output):
   #open outputfile
@@ -90,6 +91,7 @@ def importVorpaliteMesh(mesh, Vmesh):
   src = open(mesh, 'r')
   line = src.readline() #pass header
   
+  print("Add point")
   line = src.readline() #Vertices
   nb_vertices = int(src.readline())
   for i in range(nb_vertices):
@@ -97,6 +99,7 @@ def importVorpaliteMesh(mesh, Vmesh):
     Vmesh.AddNode(X,Y,Z)
     
   #delete double point
+  print("Merge coincident node")
   double = Vmesh.FindCoincidentNodes(1e-6) #in salome, so start from 1!
   Vmesh.MergeNodes(double)
   if 0:
@@ -110,6 +113,7 @@ def importVorpaliteMesh(mesh, Vmesh):
     for i in range(1,nb_vertices+1):
       if i not in uniqueIds.keys(): uniqueIds[i] = i
   
+  print("Build half-edges")
   line = src.readline() #Edges
   nb_edges = int(src.readline())
   #edges = np.array((2*nb_edges,2), dtype='i8')
@@ -122,7 +126,8 @@ def importVorpaliteMesh(mesh, Vmesh):
     if I == J:
       valid_edges[2*i] = False
       valid_edges[2*i+1] = False
-    
+  
+  print("Build half-faces")
   line = src.readline() #Faces
   nb_faces = int(src.readline())
   faces = [[]] * 2 * nb_faces
@@ -138,6 +143,7 @@ def importVorpaliteMesh(mesh, Vmesh):
       valid_faces[2*i] = False
       valid_faces[2*i+1] = False
   
+  print("Build polyhedrons")
   line = src.readline() #Poly
   nb_poly = int(src.readline())
   for i in range(nb_poly):
@@ -150,7 +156,40 @@ def importVorpaliteMesh(mesh, Vmesh):
         for x in faces[faceid]:
           poly_nodes.append(x)
         quantities.append(len(faces[faceid]))
+    #t = time.time()
+    poly_nodes = orient_faces_slow(poly_nodes, quantities, Vmesh)
+    #print("compute face orientation: {} µs".format((time.time()-t)*1e6))
     Vmesh.AddPolyhedralVolume(poly_nodes, quantities)
   return
 
+
+def orient_faces_slow(nodes, quantities, Vmesh):
+  #approximatively 1.5 ms per polyhedra
+  #so for 10000 polyhedra = 15s
+  #t = time.time()
+  #compute center
+  Xc,Yc,Zc = 0,0,0
+  for x in nodes:
+    X,Y,Z = Vmesh.GetNodeXYZ(x)
+    Xc += X; Yc += Y; Zc += Z
+  Xc /= len(nodes); Yc /= len(nodes); Zc /= len(nodes)
+  center = np.array([Xc,Yc,Zc])
+  #print("compute center: {} µs".format((time.time()-t)*1e6))
+  #check face orientation
+  index = 0
+  out = []
+  for nb_nodes in quantities:
+    face_nodes = nodes[index:nb_nodes+index]
+    A = np.array(Vmesh.GetNodeXYZ(face_nodes[1]))
+    u = A - np.array(Vmesh.GetNodeXYZ(face_nodes[0]))
+    v = np.array(Vmesh.GetNodeXYZ(face_nodes[2])) - A
+    n = np.cross(u,v)
+    test = center - A
+    if np.dot(test,n) > 0.:
+      face_nodes.reverse()
+    out += face_nodes
+    index += nb_nodes
+    #print("compute face: {} µs".format((time.time()-t)*1e6))
+  return out
+  
 

@@ -137,7 +137,7 @@ def convertForCVTCalculation(context):
   if result:
     t = time.time()
     smesh = salome.smesh.smeshBuilder.New()
-    path = '/home/%s/.config/salome/Plugins/Voronoi_converter/' %(os.getlogin())
+    path = '/home/%s/.config/salome/Plugins/SALOME-Voronoi/' %(os.getlogin())
   
     #get the mesh
     print("\tExport boundary mesh")
