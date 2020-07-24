@@ -37,9 +37,10 @@ The Vorpalite program is now compiled and can be find in `$GEOGRAM/build/Linux64
 ``` 
 import sys
 path = "~/.config/salome/Plugins/" #or change by your Salome plugin directory 
-sys.path.append(path + 'SALOME-Voronoi')
+sys.path.append(path + 'SALOME-Voronoi/')
+import Voronoi_converter
 salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
-                                  convertToVoronoi.convertForCVTCalculation)
+                                  Voronoi_converter.convertForCVTCalculation)
 ```
 
 3. Your plugin is operational. You can now start converting meshes with `Mesh/Plugins/Voronoi/Convert to Voronoi`.
