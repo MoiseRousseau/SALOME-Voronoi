@@ -72,8 +72,8 @@ def vorpalite(input_boundary, output_mesh = None, input_points = None, params = 
   if output_mesh:
     cmd += [output_mesh]
   #call command
-  subprocess.call(cmd)
-  return
+  res = subprocess.call(cmd)
+  return res
 
 
 
@@ -157,9 +157,28 @@ def importVorpaliteMesh(mesh, Vmesh):
           poly_nodes.append(x)
         quantities.append(len(faces[faceid]))
     #t = time.time()
-    poly_nodes = orient_faces_slow(poly_nodes, quantities, Vmesh)
+    #poly_nodes = orient_faces_slow(poly_nodes, quantities, Vmesh)
     #print("compute face orientation: {} µs".format((time.time()-t)*1e6))
     Vmesh.AddPolyhedralVolume(poly_nodes, quantities)
+  #orient face
+  Vmesh.ReorientObject(Vmesh)
+  volId = Vmesh.GetElementsByType(SMESH.VOLUME)[0]
+  if Vmesh.GetVolume(volId) < 0.:
+    Vmesh.ReorientObject(Vmesh)
+  return
+
+
+def createGroupsFromNodes(seedsMesh, Vmesh):
+  nodesGroups = seedsMesh.GetGroups(SMESH.NODE)
+  if not nodesGroups: return
+  for group in nodesGroups:
+    nodes = group.GetNodeIDs()
+    volIds = set()
+    newGrp = Vmesh.CreateEmptyGroup(SMESH.VOLUME, group.GetName())
+    for node in nodes:
+      X,Y,Z = seedsMesh.GetNodeXYZ(node)
+      volId = Vmesh.FindElementsByPoint(X,Y,Z,SMESH.VOLUME)
+      newGrp.Add(volId)
   return
 
 

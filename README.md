@@ -56,14 +56,16 @@ salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
 
 3. Type the parameter to pass to Vorpalite. By default, Vorpalite is set to polygonal meshing mode (`profile=poly`), generate unique ids for the vertices (`generate_ids=true`) and will merge the boundary the with same normal (`simplify=tets_voronoi_boundary`). If no seeds mesh is specified, you should add the command `nb_pts=X` to create X seeds. A description of available parameter can be found by running in a terminal `vorpalite -h`
 
-4. Click OK to launch the Voronoi Diagram computation.
+4. Check "Create groups from seeds mesh nodes group" to create groups of volume based on the existing nodes groups in your seed mesh.
+
+5. Click OK to launch the Voronoi Diagram computation.
 
 ## Mesh generation application
 
 To be completed
 
 * Voronoi diagram made from NETGEN 3D-2D-1D algorithm was found to be quite centroidal.
-* Current performance: 20000 polyhedrons per minutes
+* Single core performance: approx. 90,000 polyhedrons per minutes on a i7-6820HQ laptop
 
 ## Authors
 
@@ -71,7 +73,6 @@ To be completed
 
 ## Know issues
 
-* Slow performance with the function `orient_face()`, where the plugin passes 60% of the total runtime in some cases. Maybe try to Cythonise this part ?
 * No other known issues for instance! :)
 
 ## Getting involved

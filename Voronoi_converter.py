@@ -55,10 +55,10 @@ def convertForCVTCalculation(context):
       self.ui.setupUi(self)
       self.show()
       
-      self.selectMesh = False
-      self.selectSurface = False
-      self.mesh = None
-      self.surface = None
+      self.selectMesh = False #seeds mesh
+      self.selectSurface = False #boundary mesh
+      self.mesh = None #seeds mesh
+      self.surface = None #boundary mesh
       
       # Connect up the buttons.
       self.ui.pb_origMeshFile.clicked.connect(self.setMeshInput)
@@ -85,7 +85,8 @@ def convertForCVTCalculation(context):
       elif isinstance(self.mesh,salome.smesh.smeshBuilder.submeshProxy):
         name = salome.smesh.smeshBuilder.GetName(self.mesh)
       else:
-        return
+        self.mesh = None
+        name = ""
       self.ui.le_origMeshFile.setText(name)
       return
       
@@ -99,7 +100,8 @@ def convertForCVTCalculation(context):
       elif isinstance(self.surface,salome.smesh.smeshBuilder.submeshProxy):
         name = salome.smesh.smeshBuilder.GetName(self.surface)
       else:
-        return
+        self.surface = None
+        name = ""
       self.ui.le_origSurfaceFile.setText(name)
       return
       
@@ -147,9 +149,11 @@ def convertForCVTCalculation(context):
   
     #export generator point
     print("\tExport seeds")
-    seedsMesh = smesh.Mesh(window.mesh)
-    out_point = path + "points.pts"
-    Voronoi_utils.exportPoints(seedsMesh, out_point)
+    if window.mesh:
+      seedsMesh = smesh.Mesh(window.mesh)
+      out_point = path + "points.pts"
+      Voronoi_utils.exportPoints(seedsMesh, out_point)
+    else: out_point = None
     
     #make Voronoi
     #get the custom params
@@ -157,7 +161,14 @@ def convertForCVTCalculation(context):
     output_mesh = path + "out.ovm"
     print("\tCompute the clipped Voronoi Diagram")
     print("")
-    Voronoi_utils.vorpalite(out_boundary, output_mesh, out_point, params)
+    fail = Voronoi_utils.vorpalite(out_boundary, output_mesh, out_point, params)
+    if fail:
+      print('')
+      print("\tAn error occured in the Voronoi mesh calculation, please see Vorpalite log")
+      print ("\tTime elapsed {} s".format(time.time() - t))
+      print ("    END \n")
+      print ("####################\n\n")
+      return
     print("")
     
     #import Voronoi
@@ -165,7 +176,12 @@ def convertForCVTCalculation(context):
     mainShape = boundary.GetShape()
     Vmesh = smesh.Mesh(mainShape)
     Vmesh.SetName(boundary.GetName()+'_Voronoi')
-    Vmesh = Voronoi_utils.importVorpaliteMesh(output_mesh, Vmesh)
+    Voronoi_utils.importVorpaliteMesh(output_mesh, Vmesh)
+    
+    #create groups
+    if window.ui.cb_enableAddCenter0D.isChecked():
+      print("\tCreate groups from seeds mesh")
+      Voronoi_utils.createGroupsFromNodes(seedsMesh, Vmesh)
     
     if salome.sg.hasDesktop():
       salome.sg.updateObjBrowser()

@@ -101,7 +101,7 @@ class Ui_Dialog(object):
     self.label_surface.setText(_translate("Dialog", "Boundary mesh (mandatory):"))
     self.label_params.setText(_translate("Dialog", "Parameters to pass to Vorpalite:"))
     self.le_params.setText("profile=poly generate_ids=true simplify=tets_voronoi_boundary")
-    self.label_addCenter0D.setText(_translate("Dialog", "Add center to result as 0D elements"))
+    self.label_addCenter0D.setText(_translate("Dialog", "Create groups from seeds mesh nodes groups"))
     
     return
     
