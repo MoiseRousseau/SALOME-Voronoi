@@ -68,7 +68,7 @@ def convertForCVTCalculation(context):
       
     def select(self):
       #sg.getObjectBrowser().selectionChanged.disconnect(self.select)
-      objId = salome.sg.getSelected(0)
+      objId = helper.getSObjectSelected()[0].GetObject()
       if self.selectMesh:
         self._selectMeshInput(objId)
       elif self.selectSurface:
@@ -77,7 +77,7 @@ def convertForCVTCalculation(context):
       
       
     def _selectMeshInput(self, objId):
-      self.mesh = salome.IDToObject(objId)
+      self.mesh = objId
       if isinstance(self.mesh,salome.smesh.smeshBuilder.meshProxy):
         name = salome.smesh.smeshBuilder.GetName(self.mesh)
       elif isinstance(self.mesh,SMESH._objref_SMESH_Group):
@@ -92,10 +92,11 @@ def convertForCVTCalculation(context):
       
       
     def _selectSurfaceInput(self, objId):
-      self.surface = salome.IDToObject(objId)
+      self.surface = objId
       if isinstance(self.surface,salome.smesh.smeshBuilder.meshProxy):
         name = salome.smesh.smeshBuilder.GetName(self.surface)
-      elif isinstance(self.surface,SMESH._objref_SMESH_Group):
+      elif isinstance(self.surface,SMESH._objref_SMESH_Group) or \
+           isinstance(self.surface,SMESH._objref_SMESH_GroupOnFilter):
         name = salome.smesh.smeshBuilder.GetName(self.surface)
       elif isinstance(self.surface,salome.smesh.smeshBuilder.submeshProxy):
         name = salome.smesh.smeshBuilder.GetName(self.surface)

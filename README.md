@@ -1,12 +1,14 @@
 # SALOME-Voronoi
 
-Interface between Salome and Vorpalite from the [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html) programming library for polyhedral mesh generation. Note the Vorpalite program has many features (such as parallel tetrahedral meshing among other), but this script is primary intented for Centroidal Voronoi diagram computation.
+Interface between Salome and Vorpalite from the [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html) programming library for polyhedral mesh generation. 
+Note the Vorpalite program has many features (such as parallel tetrahedral meshing among other), but this script is primary intented for Centroidal Voronoi diagram computation.
 
-![](https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/sample.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
+![]((https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/gallery/sample.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
 
 ## Getting started
 
-Below instructions were tested using Ubuntu 20.04 and Salome 9.4. However, it should work for other Linux distributions without so much modifications.
+Below instructions were tested using Ubuntu 20.04 and from Salome 9.4 to 9.7.
+They should work for other Linux distributions without so much modifications.
 
 ### Compiling Vorpalite program
 
@@ -14,7 +16,7 @@ Below instructions were tested using Ubuntu 20.04 and Salome 9.4. However, it sh
 
 2. Install Boost, CGAL and others library header required: 
 ```
-sudo apt install libboost-dev libcgal-dev libglu1-mesa-dev libxxf86vm-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev doxygen
+sudo apt install libboost-dev libcgal-dev libglu1-mesa-dev libxxf86vm-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev doxygen cmake g++
 ```
 You may have to install other if error during configuration or compiling occur below.
 
@@ -31,12 +33,12 @@ The Vorpalite program is now compiled and can be find in `$GEOGRAM/build/Linux64
 
 ### Salome plugin installation
 
-1. Clone this repository inside your Salome plugin directory (Typically, `~/.config/salome/Plugins/`)
+1. Clone this repository inside your Salome plugin directory (Typically, `/home/$USERNAME$/.config/salome/Plugins/`, remplace `$USERNAME$` but your user name in your installation)
 
 2. Add the following line to the `smesh_plugin.py` file:
 ``` 
 import sys
-path = "~/.config/salome/Plugins/" #or change by your Salome plugin directory 
+path = "/home/$USERNAME$/.config/salome/Plugins/" #or change by your Salome plugin directory 
 sys.path.append(path + 'SALOME-Voronoi/')
 import Voronoi_converter
 salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
@@ -60,20 +62,25 @@ salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
 
 5. Click OK to launch the Voronoi Diagram computation.
 
-## Mesh generation application
 
-To be completed
+## Examples
 
-* Voronoi diagram made from NETGEN 3D-2D-1D algorithm was found to be quite centroidal.
-* Single core performance: approx. 90,000 polyhedrons per minutes on a i7-6820HQ laptop
+### Subsurface flow simulation in backfilled open-pits
+
+Comparison of a 50K elements tetrahedral and polyhedral meshes.
+Polyhedral mesh was generated in nearly 60 seconds on a i7-6820HQ machine given the domain boundary and argument `n_pts=50000` to Vorpalite.
+![]((https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/gallery/backfilled_pit.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
+
 
 ## Authors
 
 * **Moïse Rousseau** - *Initial work*
 
+TODO: import Vorpalite mesh directly in Medit binary (.meshb) format.
+
 ## Know issues
 
-* No other known issues for instance! :)
+* No known issues for instance! :)
 
 ## Getting involved
 

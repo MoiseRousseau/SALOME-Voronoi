@@ -22,7 +22,15 @@ import subprocess
 import numpy as np
 #import time
 
+### 
+### PREPROCESSING
+###
+
 def exportPoints(meshToExport, output):
+  """
+  Export the mesh vertice as seed for computing the Voronoi diagram using
+  Vorpalite
+  """
   #open outputfile
   out = open(output, 'w')
   #export source points
@@ -51,6 +59,11 @@ def exportBoundary(meshToExport, output):
   return
   
 
+
+###
+### CONVERSION
+###
+
 def vorpalite(input_boundary, output_mesh = None, input_points = None, params = None):
   #prepare command to call
   cmd = ["vorpalite"]
@@ -77,7 +90,17 @@ def vorpalite(input_boundary, output_mesh = None, input_points = None, params = 
 
 
 
+###
+### IMPORTER
+###
+
 def importVorpaliteMesh(mesh, Vmesh):
+  """
+  Import a OVM mesh created with Vorpalite
+  Args:
+  - mesh: path to the ovm file created by Vorpalite
+  - Vmesh: Salome mesh instance to import the mesh
+  """
   #OVM file format particularity
   # edge are oriented: i.e. (i,j) = from i to j
   # in faces: even edge are the normally oriented edge
@@ -169,6 +192,9 @@ def importVorpaliteMesh(mesh, Vmesh):
 
 
 def createGroupsFromNodes(seedsMesh, Vmesh):
+  """
+  Create a groups of Voronoi mesh volume corresponding to some mesh node group
+  """
   nodesGroups = seedsMesh.GetGroups(SMESH.NODE)
   if not nodesGroups: return
   for group in nodesGroups:
@@ -180,7 +206,6 @@ def createGroupsFromNodes(seedsMesh, Vmesh):
       volId = Vmesh.FindElementsByPoint(X,Y,Z,SMESH.VOLUME)
       newGrp.Add(volId)
   return
-
 
 def orient_faces_slow(nodes, quantities, Vmesh):
   #approximatively 1.5 ms per polyhedra
