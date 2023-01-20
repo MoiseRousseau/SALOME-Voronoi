@@ -1,51 +1,46 @@
 # SALOME-Voronoi
 
-Interface between Salome and Vorpalite from the [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html) programming library for polyhedral mesh generation. 
+Interface between Salome and Vorpalite from the [Geogram](https://github.com/BrunoLevy/geogram) programming library for polyhedral mesh generation. 
 Note the Vorpalite program has many features (such as parallel tetrahedral meshing among other), but this script is primary intented for Centroidal Voronoi diagram computation.
 
 ![](https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/gallery/sample.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
 
-## Getting started
+## Installation
 
-Below instructions were tested using Ubuntu 20.04 and from Salome 9.4 to 9.7.
+Below instructions were tested using Ubuntu 22.04 and Salome 9.9
 They should work for other Linux distributions without so much modifications.
 
-### Compiling Vorpalite program
+1. Clone this repository inside your Salome plugin directory `$HOME/.config/salome/Plugins/`.
+If this folder does not exist, create it.
 
-1. Download the Geogram library source [here](https://gforge.inria.fr/frs/?group_id=5833) and unzip the archive.
-
-2. Install Boost, CGAL and others library header required: 
+2. Install Vorpalite dependencies: 
 ```
 sudo apt install libboost-dev libcgal-dev libglu1-mesa-dev libxxf86vm-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev doxygen cmake g++
 ```
-You may have to install other if error during configuration or compiling occur below.
+3. Compile Vorpalite executable using the dedicated script `install_vorpalite.sh`. 
 
-3. Open a terminal in the unzipped Geogram folder and run in the terminal:
-``` 
-./configure.sh
-cd build/Linux64-gcc-dynamic-Release
-make -j4
-```
-The Vorpalite program is now compiled and can be find in `$GEOGRAM/build/Linux64-gcc-dynamic-Release/bin/` folder.
-
-4. Copy the file `vorpalite` of the repository in the folder `~/.local/bin/` to create a command for Vorpalite to be called from anywhere in the terminal. You may have to change the file with the path to Vorpalite. Then open a terminal and make the script executable with `chmod +x vorpalite`.
-
-
-### Salome plugin installation
-
-1. Clone this repository inside your Salome plugin directory (Typically, `/home/$USERNAME$/.config/salome/Plugins/`, remplace `$USERNAME$` but your user name in your installation)
-
-2. Add the following line to the `smesh_plugin.py` file:
+4. Create or add the following line to the `smesh_plugin.py` file:
 ``` 
 import sys
-path = "/home/$USERNAME$/.config/salome/Plugins/" #or change by your Salome plugin directory 
-sys.path.append(path + 'SALOME-Voronoi/')
-import Voronoi_converter
-salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', ' ',
-                                  Voronoi_converter.convertForCVTCalculation)
+import os
+import salome_pluginsmanager
+
+try:
+  pathVoronoi = os.getenv("HOME") + "/.config/salome/Plugins/SALOME-Voronoi"
+  if not pathVoronoi in sys.path:
+      sys.path.append(pathVoronoi)
+ 
+  import Voronoi_converter
+
+  salome_pluginsmanager.AddFunction('Voronoi/Convert to Voronoi', '', Voronoi_converter.convertForCVTCalculation)
+  
+except Exception as e:
+
+  print("Failed to import SALOME-Voronoi plugin:", e)
+
 ```
 
-3. Your plugin is operational. You can now start converting meshes with `Mesh/Plugins/Voronoi/Convert to Voronoi`.
+5. Your plugin is operational. You can now start converting meshes with `Mesh/Plugins/Voronoi/Convert to Voronoi`.
 
 
 ## Use the plugin
@@ -71,16 +66,12 @@ Comparison of a 50K elements tetrahedral and polyhedral meshes.
 Polyhedral mesh was generated in nearly 60 seconds on a i7-6820HQ machine given the domain boundary and argument `n_pts=50000` to Vorpalite.
 ![](https://github.com/MoiseRousseau/SALOME-Voronoi/blob/master/gallery/backfilled_pit.png "Sample Voronoi diagram made from NETGEN-3D-2D-1D seeds")
 
+If you make beautiful meshes with my script, please send me picture of it so I can add it here!
+
 
 ## Authors
 
 * **Moïse Rousseau** - *Initial work*
-
-TODO: import Vorpalite mesh directly in Medit binary (.meshb) format
-
-## Know issues
-
-* No known issues for instance! :)
 
 ## Getting involved
 

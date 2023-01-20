@@ -20,6 +20,7 @@
 import SMESH
 import subprocess
 import numpy as np
+import os
 #import time
 
 ### 
@@ -66,7 +67,7 @@ def exportBoundary(meshToExport, output):
 
 def vorpalite(input_boundary, output_mesh = None, input_points = None, params = None):
   #prepare command to call
-  cmd = ["vorpalite"]
+  cmd = [os.path.dirname(__file__)+"/geogram_1.8.2/bin/vorpalite"]
   #params
   if params:
     if isinstance(params, str): params = params.split()
